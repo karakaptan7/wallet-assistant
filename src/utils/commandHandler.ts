@@ -7,11 +7,13 @@ export async function handleCommand(
     command: string,
     setMessages: (messages: (prev) => any[]) => void
 ) {
+    // @ts-ignore
     if (!window.ethereum) {
         setMessages((prev) => [...prev, "Ethereum provider not found."]);
         return;
     }
 
+    // @ts-ignore
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
 

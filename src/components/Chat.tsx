@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 
+// @ts-ignore
 export default function Chat({ handleCommand }) {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<string[]>([]);

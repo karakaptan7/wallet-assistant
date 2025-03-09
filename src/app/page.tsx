@@ -10,7 +10,7 @@ export default function Home() {
 
     return (
         <Box p={5}>
-            <Button onClick={connectWallet} colorScheme="blue" isLoading={isLoading} disabled={isLoading}>
+            <Button onClick={connectWallet} colorScheme="blue" loading={isLoading} disabled={isLoading}>
                 {isLoading ? <Spinner size="sm" /> : "Cüzdanı Bağla"}
             </Button>
 

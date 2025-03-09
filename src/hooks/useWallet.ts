@@ -8,7 +8,9 @@ export function useWallet() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
+        // @ts-ignore
         if (window.ethereum) {
+            // @ts-ignore
             const newProvider = new ethers.BrowserProvider(window.ethereum);
             setProvider(newProvider);
         }
