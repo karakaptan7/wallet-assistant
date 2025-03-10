@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, Box, Text, Spinner, Input } from "@chakra-ui/react";
-import { Toaster, toaster } from "@/components/ui/toaster"
+import { Button, Box, Text, Spinner } from "@chakra-ui/react";
+import { Toaster, toaster } from "@/components/ui/toaster";
 import { useState } from "react";
 import { useWallet } from "../hooks/useWallet";
 import Chat from "../components/Chat";
@@ -9,11 +9,13 @@ import { handleCommand } from "../utils/commandHandler";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 export default function Home() {
-    const { walletAddress, balance, connectWallet, isLoading } = useWallet();
+    const { walletAddress, connectWallet, isLoading, isWalletConnected } = useWallet();
+    const { balance } = useWebSocket("wss://your-websocket-url");
 
     const handleConnectWallet = async () => {
-        try {await connectWallet();
-          toaster.success({
+        try {
+            await connectWallet();
+            toaster.success({
                 title: "Wallet Connected",
             });
             if (walletAddress) {
@@ -21,15 +23,13 @@ export default function Home() {
                     title: "Wallet Connected",
                     description: `Connected to ${walletAddress}`,
                 });
-          }
+            }
         } catch (error) {
             toaster.error({
                 title: "Failed to connect wallet",
-
             });
         }
     };
-
 
     return (
         <Box p={5}>
@@ -41,14 +41,13 @@ export default function Home() {
             {walletAddress && (
                 <Box mt={4}>
                     <Text>Cüzdan: {walletAddress}</Text>
+                    <Text>Bakiye: {balance} ETH</Text>
                 </Box>
             )}
 
             <Box mt={5}>
-                <Chat handleCommand={handleCommand} />
+                <Chat handleCommand={handleCommand} isWalletConnected={isWalletConnected} />
             </Box>
-
-
         </Box>
     );
 }

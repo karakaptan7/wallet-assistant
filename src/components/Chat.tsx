@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Box, Input, Button, VStack, Text, Spinner, Table } from "@chakra-ui/react";
 
@@ -5,9 +7,10 @@ type HandleCommandType = (input: string, setMessages: React.Dispatch<React.SetSt
 
 interface ChatProps {
     handleCommand: HandleCommandType;
+    isWalletConnected: boolean;
 }
 
-export default function Chat({ handleCommand }: ChatProps) {
+export default function Chat({ handleCommand, isWalletConnected }: ChatProps) {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +32,7 @@ export default function Chat({ handleCommand }: ChatProps) {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && isWalletConnected) {
                 sendMessage();
             }
         };
@@ -38,7 +41,7 @@ export default function Chat({ handleCommand }: ChatProps) {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [input]);
+    }, [input, isWalletConnected]);
 
     return (
         <Box p={4} border="1px solid gray" borderRadius="md" width="100%">
@@ -83,12 +86,13 @@ export default function Chat({ handleCommand }: ChatProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Komut girin..."
+                disabled={!isWalletConnected} // Disable input if wallet is not connected
             />
-            <Button onClick={sendMessage} mt={2} disabled={isLoading}>
+            <Button onClick={sendMessage} mt={2} disabled={isLoading || !isWalletConnected}>
                 {isLoading ? <Spinner size="sm" /> : "Gönder"}
             </Button>
             &nbsp;
-            <Button onClick={clearMessages} mt={2} variant="outline">
+            <Button onClick={clearMessages} mt={2} variant="outline" disabled={!isWalletConnected}>
                 Temizle
             </Button>
         </Box>

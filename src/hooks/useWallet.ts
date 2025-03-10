@@ -1,3 +1,5 @@
+"use client";
+
 import {useState, useEffect} from "react";
 import {ethers} from "ethers";
 
@@ -6,7 +8,7 @@ export function useWallet() {
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [balance, setBalance] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
+    const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
     useEffect(() => {
         // @ts-ignore
         if (window.ethereum) {
@@ -32,8 +34,9 @@ export function useWallet() {
             console.error("Failed to connect wallet:", error);
         } finally {
             setIsLoading(false);
+            setIsWalletConnected(true);
         }
     };
 
-    return {walletAddress, balance, connectWallet, isLoading};
+    return {walletAddress, balance, connectWallet, isLoading, isWalletConnected};
 }
