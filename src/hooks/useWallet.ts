@@ -9,6 +9,7 @@ export function useWallet() {
     const [balance, setBalance] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
+
     useEffect(() => {
         // @ts-ignore
         if (window.ethereum) {

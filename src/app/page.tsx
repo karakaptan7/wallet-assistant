@@ -5,12 +5,11 @@ import { Toaster, toaster } from "@/components/ui/toaster";
 import { useWallet } from "../hooks/useWallet";
 import Chat from "../components/Chat";
 import { handleCommand } from "../utils/commandHandler";
-//import { useWebSocket } from "@/hooks/useWebSocket";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 export default function Home() {
     const { walletAddress, connectWallet, isLoading, isWalletConnected } = useWallet();
-    //const { balance } = useWebSocket("wss://your-websocket-url");
-
+    const { balance, error } = useWebSocket(`wss://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`);
     const handleConnectWallet = async () => {
         try {
             toaster.loading({
@@ -18,14 +17,10 @@ export default function Home() {
             });
             await connectWallet();
             toaster.dismiss(); // Dismiss the loading state
-           if (walletAddress) {
+            if (isWalletConnected) {
                 toaster.success({
                     title: "Wallet Connected",
                     description: `Connected to ${walletAddress}`,
-                });
-            } else {
-                toaster.error({
-                    title: "Failed to connect wallet",
                 });
             }
         } catch (error) {
@@ -46,6 +41,13 @@ export default function Home() {
             {walletAddress && (
                 <Box mt={4}>
                     <Text>Cüzdan: {walletAddress}</Text>
+                    <Text>Bakiye: {balance} ETH</Text>
+                </Box>
+            )}
+
+            {error && (
+                <Box mt={4}>
+                    <Text color="red.500">Error: {error}</Text>
                 </Box>
             )}
 

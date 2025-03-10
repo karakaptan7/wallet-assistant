@@ -1,12 +1,14 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { WebSocketProvider, ethers } from "ethers";
 
 export function useWebSocket(url: string) {
     const [messages, setMessages] = useState<string[]>([]);
     const [balance, setBalance] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
-    // @ts-ignore
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.WebSocketProvider(url);
 
     useEffect(() => {
         const updateBalance = async () => {
@@ -19,8 +21,26 @@ export function useWebSocket(url: string) {
 
         socketRef.current = new WebSocket(url);
 
+        socketRef.current.onopen = () => {
+            setError(null);
+        };
+
         socketRef.current.onmessage = (event) => {
-            setMessages((prevMessages) => [...prevMessages, event.data]);
+            const data = JSON.parse(event.data);
+            if (data.type === "balanceUpdate") {
+                setBalance(ethers.formatEther(data.newBalance));
+                setMessages((prevMessages) => [...prevMessages, `Balance updated: ${ethers.formatEther(data.newBalance)} ETH`]);
+            } else {
+                setMessages((prevMessages) => [...prevMessages, event.data]);
+            }
+        };
+
+        socketRef.current.onerror = () => {
+            setError("WebSocket connection error");
+        };
+
+        socketRef.current.onclose = () => {
+            setError("WebSocket connection closed");
         };
 
         return () => {
@@ -35,5 +55,5 @@ export function useWebSocket(url: string) {
         }
     };
 
-    return { messages, balance, sendMessage };
+    return { messages, balance, sendMessage, error };
 }
