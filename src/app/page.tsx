@@ -9,7 +9,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 
 export default function Home() {
     const { walletAddress, connectWallet, isLoading, isWalletConnected } = useWallet();
-    const { balance, error } = useWebSocket(`wss://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`);
+    const { balance, error } = useWebSocket(`wss://eth-mainnet.alchemyapi.io/v2/91BXZBQQ5BCW2B4ARCQSXJNR7952DB5G15`);
     const handleConnectWallet = async () => {
         try {
             toaster.loading({
@@ -41,7 +41,6 @@ export default function Home() {
             {walletAddress && (
                 <Box mt={4}>
                     <Text>Cüzdan: {walletAddress}</Text>
-                    <Text>Bakiye: {balance} ETH</Text>
                 </Box>
             )}
 
