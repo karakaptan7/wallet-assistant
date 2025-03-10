@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, Input, Button, VStack, Text, Table } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Input, Button, VStack, Text, Spinner, Table } from "@chakra-ui/react";
 
 type HandleCommandType = (input: string, setMessages: React.Dispatch<React.SetStateAction<string[]>>) => void;
 
@@ -10,17 +10,35 @@ interface ChatProps {
 export default function Chat({ handleCommand }: ChatProps) {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const sendMessage = () => {
         if (!input.trim()) return;
         setMessages([...messages, `> ${input}`]);
-        handleCommand(input, setMessages);
+        setIsLoading(true);
+        handleCommand(input, (newMessages) => {
+            setMessages(newMessages);
+            setIsLoading(false);
+        });
         setInput("");
     };
 
     const clearMessages = () => {
         setMessages([]);
     };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [input]);
 
     return (
         <Box p={4} border="1px solid gray" borderRadius="md" width="100%">
@@ -66,9 +84,10 @@ export default function Chat({ handleCommand }: ChatProps) {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Komut girin..."
             />
-            <Button onClick={sendMessage} mt={2} colorScheme="blue">
-                Gönder
-            </Button>&nbsp;
+            <Button onClick={sendMessage} mt={2} disabled={isLoading}>
+                {isLoading ? <Spinner size="sm" /> : "Gönder"}
+            </Button>
+            &nbsp;
             <Button onClick={clearMessages} mt={2} variant="outline">
                 Temizle
             </Button>

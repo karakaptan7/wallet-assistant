@@ -47,7 +47,7 @@ export async function handleCommand(
         const explanation = getAssetExplanation(asset);
         setMessages((prev) => [...prev, explanation]);
     } else {
-        setMessages((prev) => [...prev, "Unknown command."]);
+        setMessages((prev) => [...prev, "bilinmeyen Komut."]);
     }
 }
 
@@ -67,6 +67,10 @@ function getAssetExplanation(asset: string): string {
     const explanations: { [key: string]: string } = {
         "ETH": "Ethereum (ETH) is a decentralized, open-source blockchain with smart contract functionality.",
         "BTC": "Bitcoin (BTC) is a decentralized digital currency, without a central bank or single administrator.",
+        "balance":"The balance refers to the total amount of cryptocurrency an account currently holds.",
+        "history":"History refers to the list of transactions (both incoming and outgoing) associated with the wallet.",
+        "stats":"Stats refer to performance metrics related to the wallet or account.",
+        "asset":"An asset is a digital or physical item that holds value."
     };
 
     return explanations[asset] || `No explanation found for ${asset}.`;
