@@ -5,12 +5,13 @@ export function useWebSocket(url: string) {
     const [messages, setMessages] = useState<string[]>([]);
     const [balance, setBalance] = useState<string>("");
     const socketRef = useRef<WebSocket | null>(null);
+    // @ts-ignore
     const provider = new ethers.BrowserProvider(window.ethereum);
 
     useEffect(() => {
         const updateBalance = async () => {
             const signer = provider.getSigner();
-            const newBalance = await provider.getBalance(signer.address);
+            const newBalance = await provider.getBalance((await signer).address);
             setBalance(ethers.formatEther(newBalance));
         };
 

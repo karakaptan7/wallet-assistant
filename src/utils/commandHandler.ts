@@ -1,22 +1,19 @@
 "use client";
 
-import {ethers} from "ethers";
-import {useWallet} from "@/hooks/useWallet";
+import { ethers } from "ethers";
 
 export async function handleCommand(
     command: string,
-    setMessages: (messages: (prev) => any[]) => void
+    setMessages: (messages: (prev: any) => any[]) => void
+
 ) {
-    // @ts-ignore
     if (!window.ethereum) {
         setMessages((prev) => [...prev, "Ethereum provider not found."]);
         return;
     }
 
-    // @ts-ignore
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
-
     const apiKey = "91BXZBQQ5BCW2B4ARCQSXJNR7952DB5G15";
 
     if (command === "balance") {
@@ -28,31 +25,25 @@ export async function handleCommand(
         const data = await response.json();
 
         if (data.status === "1") {
-            const formattedHistory = data.result.map((tx: any) => {
-                const date = new Date(tx.timeStamp * 1000); // Convert timestamp to milliseconds
-                const formattedDate = date.toLocaleString(); // Format date to a readable string
-               // return `Tx: ${tx.hash}, \nStatus:${tx.status}, \nValue: ${ethers.formatEther(tx.value)} ETH, \nTimestamp: ${formattedDate}, \nGas Price: ${tx.gasPrice} , \nGas Used: ${tx.gasUsed} , \nBlock Hash: ${tx.blockHash}`;
-                return `${tx.hash},${formattedDate},${tx.gasPrice},${tx.gasUsed},${tx.blockHash},${ethers.formatEther(tx.value)}`;
-            });
-            setMessages((prev) => [...prev, ...formattedHistory]);
+            setMessages((prev) => [...prev, JSON.stringify(data.result)]);
+
+            console.log(data.result);
         } else {
             setMessages((prev) => [...prev, "No transactions found or an error occurred."]);
         }
     } else if (command === "stats") {
         const stats = await getAssetStatistics(signer.address, apiKey);
-
         setMessages((prev) => [...prev, stats]);
     } else if (command.startsWith("explain")) {
         const asset = command.split(" ")[1];
         const explanation = getAssetExplanation(asset);
         setMessages((prev) => [...prev, explanation]);
     } else {
-        setMessages((prev) => [...prev, "bilinmeyen Komut."]);
+        setMessages((prev) => [...prev, "Unknown command."]);
     }
 }
 
 async function getAssetStatistics(address: string, apiKey: string): Promise<string> {
-
     const response = await fetch(`https://api.etherscan.io/api?module=stats&action=ethsupply&apikey=${apiKey}`);
     const data = await response.json();
 
@@ -67,10 +58,10 @@ function getAssetExplanation(asset: string): string {
     const explanations: { [key: string]: string } = {
         "ETH": "Ethereum (ETH) is a decentralized, open-source blockchain with smart contract functionality.",
         "BTC": "Bitcoin (BTC) is a decentralized digital currency, without a central bank or single administrator.",
-        "balance":"The balance refers to the total amount of cryptocurrency an account currently holds.",
-        "history":"History refers to the list of transactions (both incoming and outgoing) associated with the wallet.",
-        "stats":"Stats refer to performance metrics related to the wallet or account.",
-        "asset":"An asset is a digital or physical item that holds value."
+        "balance": "The balance refers to the total amount of cryptocurrency an account currently holds.",
+        "history": "History refers to the list of transactions (both incoming and outgoing) associated with the wallet.",
+        "stats": "Stats refer to performance metrics related to the wallet or account.",
+        "asset": "An asset is a digital or physical item that holds value."
     };
 
     return explanations[asset] || `No explanation found for ${asset}.`;

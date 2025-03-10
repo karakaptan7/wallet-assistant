@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Box, Input, Button, VStack, Text, Spinner, Table } from "@chakra-ui/react";
+import {useState, useEffect} from "react";
+import {Box, Input, Button, VStack, Text, Spinner, Table} from "@chakra-ui/react";
+import { ethers } from "ethers";
 
 type HandleCommandType = (input: string, setMessages: React.Dispatch<React.SetStateAction<string[]>>) => void;
 
@@ -9,8 +10,13 @@ interface ChatProps {
     handleCommand: HandleCommandType;
     isWalletConnected: boolean;
 }
-
-export default function Chat({ handleCommand, isWalletConnected }: ChatProps) {
+function truncateString(str: string, maxLength: number): string {
+    if (str.length <= maxLength) {
+        return str;
+    }
+    return str.slice(0, maxLength) + '...';
+}
+export default function Chat({handleCommand, isWalletConnected}: ChatProps) {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -48,13 +54,15 @@ export default function Chat({ handleCommand, isWalletConnected }: ChatProps) {
             <VStack align="end" maxH="500px" overflowY="auto">
                 {messages.map((msg, index) => (
                     <Box key={index} width="100%">
-                        <Text>{msg}</Text>
-                        {msg.startsWith("> history") && (
+                        {msg.startsWith("[{") ? (
                             <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
+                                        <Table.ColumnHeader>Block Number</Table.ColumnHeader>
+                                        <Table.ColumnHeader>Time</Table.ColumnHeader>
                                         <Table.ColumnHeader>Hash</Table.ColumnHeader>
-                                        <Table.ColumnHeader>Timestamp</Table.ColumnHeader>
+                                        <Table.ColumnHeader>From</Table.ColumnHeader>
+                                        <Table.ColumnHeader>To</Table.ColumnHeader>
                                         <Table.ColumnHeader>Gas Price</Table.ColumnHeader>
                                         <Table.ColumnHeader>Gas Used</Table.ColumnHeader>
                                         <Table.ColumnHeader>Block Hash</Table.ColumnHeader>
@@ -62,26 +70,27 @@ export default function Chat({ handleCommand, isWalletConnected }: ChatProps) {
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
-                                    {msg.split(",").slice(1).map((data, index) => {
-                                        const [hash, timestamp, gasPrice, gasUsed, blockHash, value] = data.split(",");
-                                        return (
-                                            <Table.Row key={index}>
-                                                <Table.Cell>{hash}</Table.Cell>
-                                                <Table.Cell>{timestamp}</Table.Cell>
-                                                <Table.Cell>{gasPrice}</Table.Cell>
-                                                <Table.Cell>{gasUsed}</Table.Cell>
-                                                <Table.Cell>{blockHash}</Table.Cell>
-                                                <Table.Cell textAlign="end">{value}</Table.Cell>
-                                            </Table.Row>
-                                        );
-                                    })}
+                                    {JSON.parse(msg).map((data: any, index: number) => (
+                                        <Table.Row key={index}>
+                                            <Table.Cell>{data.blockNumber}</Table.Cell>
+                                            <Table.Cell>{new Date(data.timeStamp * 1000).toLocaleString()}</Table.Cell>
+                                            <Table.Cell>{truncateString(data.hash, 10)}</Table.Cell>
+                                            <Table.Cell>{truncateString(data.from, 10)}</Table.Cell>
+                                            <Table.Cell>{truncateString(data.to, 10)}</Table.Cell>
+                                            <Table.Cell>{data.gasPrice}</Table.Cell>
+                                            <Table.Cell>{data.gasUsed}</Table.Cell>
+                                            <Table.Cell>{truncateString(data.blockHash, 10)}</Table.Cell>
+                                            <Table.Cell textAlign="end">{ethers.formatEther(data.value)} ETH</Table.Cell>
+                                        </Table.Row>
+                                    ))}
                                 </Table.Body>
                             </Table.Root>
+                        ) : (
+                            <Text>{msg}</Text>
                         )}
                     </Box>
                 ))}
             </VStack>
-
             <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -89,7 +98,7 @@ export default function Chat({ handleCommand, isWalletConnected }: ChatProps) {
                 disabled={!isWalletConnected} // Disable input if wallet is not connected
             />
             <Button onClick={sendMessage} mt={2} disabled={isLoading || !isWalletConnected}>
-                {isLoading ? <Spinner size="sm" /> : "Gönder"}
+                {isLoading ? <Spinner size="sm"/> : "Gönder"}
             </Button>
             &nbsp;
             <Button onClick={clearMessages} mt={2} variant="outline" disabled={!isWalletConnected}>
